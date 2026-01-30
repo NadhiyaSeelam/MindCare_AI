@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - MindCare AI</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1>💙 MindCare AI</h1>
+            <ul id="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li id="login-link"><a href="login.html">Login</a></li>
+                <li id="signup-link"><a href="signup.html">Sign Up</a></li>
+                <li id="profile-link" style="display:none;"><a href="profile.html">Profile</a></li>
+                <li id="chat-link" style="display:none;"><a href="chat.html">Chat Support</a></li>
+                <li id="logout-link" style="display:none;"><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container">
+            <div id="messages"></div>
+
+            <div class="form-container">
+                <h2>🔐 Login</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                </form>
+                <div class="link">
+                    <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/app.js"></script>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const users = loadUsers();
+            if (users[username] && users[username] === password) {
+                localStorage.setItem('logged_in', 'true');
+                localStorage.setItem('username', username);
+                const chatHistory = loadChatHistory(username);
+                localStorage.setItem('chat_history', JSON.stringify(chatHistory));
+                const profile = loadProfile(username);
+                profile.last_active = new Date().toISOString();
+                saveProfile(username, profile);
+                showMessage('Login successful!', 'success');
+                setTimeout(() => window.location.href = 'index.html', 1000);
+            } else {
+                showMessage('Invalid username or password.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

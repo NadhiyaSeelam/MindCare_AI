@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Support - MindCare AI</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1>💙 MindCare AI</h1>
+            <ul id="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li id="login-link"><a href="login.html">Login</a></li>
+                <li id="signup-link"><a href="signup.html">Sign Up</a></li>
+                <li id="profile-link" style="display:none;"><a href="profile.html">Profile</a></li>
+                <li id="chat-link" style="display:none;"><a href="chat.html">Chat Support</a></li>
+                <li id="logout-link" style="display:none;"><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container">
+            <div id="messages"></div>
+
+            <div class="chat-container">
+                <h2 style="text-align: center; color: #4a90e2;">💬 Emotional Support Chat</h2>
+
+                <div class="psychologist-note" style="margin-bottom: 20px;">
+                    <p><strong>Remember:</strong> If you're experiencing a mental health crisis or severe emotional distress, please seek immediate help from a qualified professional. This AI chat is for general emotional support only.</p>
+                </div>
+
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <button onclick="clearChat()" class="btn" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); font-size: 14px; padding: 8px 16px;">🗑️ Clear Chat History</button>
+                </div>
+
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message bot-message">
+                        <div class="message-content">Hello! I'm here to provide emotional support. How are you feeling today?</div>
+                        <div class="message-timestamp">Now</div>
+                    </div>
+                </div>
+
+                <div class="chat-input">
+                    <input type="text" id="user-input" placeholder="Share how you're feeling..." required>
+                    <button onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/app.js"></script>
+    <script>
+        let chatHistory = [];
+
+        function initChat() {
+            if (!isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+            const username = getUsername();
+            chatHistory = loadChatHistory(username);
+            renderChatHistory();
+        }
+
+        function renderChatHistory() {
+            const messagesDiv = document.getElementById('chat-messages');
+            messagesDiv.innerHTML = '';
+            if (chatHistory.length === 0) {
+                addMessage('Hello! I\'m here to provide emotional support. How are you feeling today?', 'bot-message', 'Now');
+            } else {
+                chatHistory.forEach(msg => {
+                    addMessage(msg.message, msg.type === 'user' ? 'user-message' : 'bot-message', msg.timestamp);
+                });
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('user-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            addMessage(message, 'user-message', timestamp);
+            chatHistory.push({type: 'user', message: message, timestamp: timestamp});
+            input.value = '';
+
+            // Get bot response
+            setTimeout(() => {
+                const response = getBotResponse(message);
+                addMessage(response, 'bot-message', new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+                chatHistory.push({type: 'bot', message: response, timestamp: timestamp});
+                saveChatHistory(getUsername(), chatHistory);
+                updateProfile();
+            }, 500);
+        }
+
+        function getBotResponse(message) {
+            const lower = message.toLowerCase();
+            if (lower.includes('sad') || lower.includes('depressed')) {
+                return "I'm sorry you're feeling sad. It's okay to feel this way sometimes. Remember that you're not alone, and things can get better. Would you like to talk about what's making you feel this way?";
+            } else if (lower.includes('anxious') || lower.includes('worried')) {
+                return "Anxiety can be really tough. Try taking deep breaths - inhale for 4 counts, hold for 4, exhale for 4. I'm here to listen if you want to share what's on your mind.";
+            } else if (lower.includes('happy') || lower.includes('good')) {
+                return "That's great to hear! It's wonderful that you're feeling positive. What made your day good today?";
+            } else if (lower.includes('stressed') || lower.includes('overwhelmed')) {
+                return "Stress can feel overwhelming. Try breaking down your tasks into smaller steps. Remember to take breaks and be kind to yourself. What's stressing you out right now?";
+            } else {
+                return "Thank you for sharing that with me. It takes courage to open up about your feelings. I'm here to listen and support you. How can I help you today?";
+            }
+        }
+
+        function clearChat() {
+            if (confirm('Are you sure you want to clear the chat history? This action cannot be undone.')) {
+                chatHistory = [];
+                saveChatHistory(getUsername(), chatHistory);
+                renderChatHistory();
+            }
+        }
+
+        function addMessage(text, className, timestamp) {
+            const messages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${className}`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = text;
+
+            const timestampDiv = document.createElement('div');
+            timestampDiv.className = 'message-timestamp';
+            timestampDiv.textContent = timestamp;
+
+            messageDiv.appendChild(contentDiv);
+            messageDiv.appendChild(timestampDiv);
+
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function updateProfile() {
+            const username = getUsername();
+            const profile = loadProfile(username);
+            profile.total_messages += 2;
+            profile.last_active = new Date().toISOString();
+            saveProfile(username, profile);
+        }
+
+        document.getElementById('user-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initChat();
+            const messages = document.getElementById('chat-messages');
+            messages.scrollTop = messages.scrollHeight;
+        });
+    </script>
+</body>
+</html>

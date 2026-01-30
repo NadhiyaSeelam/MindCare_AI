@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - MindCare AI</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <h1>💙 MindCare AI</h1>
+            <ul id="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li id="login-link"><a href="login.html">Login</a></li>
+                <li id="signup-link"><a href="signup.html">Sign Up</a></li>
+                <li id="profile-link" style="display:none;"><a href="profile.html">Profile</a></li>
+                <li id="chat-link" style="display:none;"><a href="chat.html">Chat Support</a></li>
+                <li id="logout-link" style="display:none;"><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container">
+            <div id="messages"></div>
+
+            <div style="max-width: 800px; margin: 0 auto;">
+                <h2 style="text-align: center; color: #4a90e2; margin-bottom: 30px;">👤 My Profile</h2>
+
+                <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                    <h3 style="color: #4a90e2; margin-bottom: 20px;">Account Information</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;" id="profile-info">
+                        <!-- Profile info will be populated by JS -->
+                    </div>
+                </div>
+
+                <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" id="chat-history-section">
+                    <h3 style="color: #4a90e2; margin-bottom: 20px;">Recent Chat History</h3>
+                    <!-- Chat history will be populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/app.js"></script>
+    <script>
+        function loadProfilePage() {
+            if (!isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+            const username = getUsername();
+            const profile = loadProfile(username);
+            const chatHistory = loadChatHistory(username);
+
+            // Populate profile info
+            const profileInfo = document.getElementById('profile-info');
+            profileInfo.innerHTML = `
+                <div>
+                    <label style="font-weight: bold; color: #555;">Username:</label>
+                    <p style="margin: 5px 0; color: #333;">${profile.username}</p>
+                </div>
+                <div>
+                    <label style="font-weight: bold; color: #555;">Account Created:</label>
+                    <p style="margin: 5px 0; color: #333;">${new Date(profile.created_date).toLocaleDateString()}</p>
+                </div>
+                <div>
+                    <label style="font-weight: bold; color: #555;">Total Chat Sessions:</label>
+                    <p style="margin: 5px 0; color: #333;">${profile.total_sessions}</p>
+                </div>
+                <div>
+                    <label style="font-weight: bold; color: #555;">Total Messages:</label>
+                    <p style="margin: 5px 0; color: #333;">${profile.total_messages}</p>
+                </div>
+            `;
+
+            // Populate chat history
+            const chatSection = document.getElementById('chat-history-section');
+            if (chatHistory.length > 0) {
+                let historyHtml = '<div style="max-height: 400px; overflow-y: auto; border: 1px solid #e1e5e9; border-radius: 8px; padding: 15px;">';
+                // Group by date or just show all
+                const today = new Date().toDateString();
+                historyHtml += `
+                    <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h4 style="margin: 0; color: #4a90e2;">Recent Session</h4>
+                            <small style="color: #666;">${today}</small>
+                        </div>
+                        <div style="max-height: 150px; overflow-y: auto;">
+                `;
+                chatHistory.forEach(message => {
+                    historyHtml += `
+                        <div style="margin-bottom: 8px; padding: 8px; border-radius: 6px; ${message.type === 'user' ? 'background: #e3f2fd; margin-left: auto; max-width: 70%;' : 'background: white; border: 1px solid #e1e5e9; max-width: 70%;'}">
+                            <small style="color: #666;">${message.timestamp}</small>
+                            <p style="margin: 5px 0 0 0; font-size: 14px;">${message.message}</p>
+                        </div>
+                    `;
+                });
+                historyHtml += '</div></div></div>';
+                chatSection.innerHTML = '<h3 style="color: #4a90e2; margin-bottom: 20px;">Recent Chat History</h3>' + historyHtml;
+            } else {
+                chatSection.innerHTML = `
+                    <h3 style="color: #4a90e2; margin-bottom: 20px;">Recent Chat History</h3>
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <p>📝 No chat history yet.</p>
+                        <p>Start a conversation in the <a href="chat.html" style="color: #4a90e2;">Chat Support</a> section.</p>
+                    </div>
+                `;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadProfilePage);
+    </script>
+</body>
+</html>
